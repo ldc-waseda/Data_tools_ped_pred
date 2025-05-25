@@ -159,3 +159,32 @@ else:
     gif_bytes = buf.read()
     # 3. 直接给 Streamlit 展示
     st.image(gif_bytes, caption="当前点动画 (GIF)", use_container_width=True)
+
+    # 4.5 标注输入
+    annotation = st.text_area("请输入本样本的标注内容：", key=f"ann_{scene}_{sample_idx}")
+    # 4.6 保存按钮
+    if st.button("保存本样本数据", key=f"save_npz_{scene}_{sample_idx}"):
+        # 1) 计算 sec_id
+        if scene in SDD_FILE:
+            sec_id = os.path.basename(os.path.dirname(txt_file))
+        else:
+            sec_id = scene
+        # print(sec_id)
+        # 2) 准备要保存的字典
+        data_dict = {
+            "id":          np.int32(agent_id),
+            "start_frame": np.int32(frames[0]),
+            "total_seq":   np.int32(len(frames)),
+            "traj":        traj.astype(np.float32),
+            "start_img":   images[0].astype(np.uint8),
+            "annotation":  np.array(annotation)
+        }
+        # print(data_dict)
+        # 3) 文件名 & 保存
+        dataset_name = "SDD" if scene in SDD_FILE else "ETH"
+        filename = f"{dataset_name}_{scene}_{sec_id}_{agent_id}.npz"
+        os.makedirs("annotations_npz", exist_ok=True)
+        save_path = os.path.join("annotations_npz", filename)
+        np.savez_compressed(save_path, **data_dict)
+
+        st.success(f"已保存 → {save_path}")
