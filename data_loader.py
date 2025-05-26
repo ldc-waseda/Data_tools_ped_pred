@@ -84,7 +84,7 @@ class SDDLoader():
         pass
     def sort_by_frame(self):
         # get the target obs which frame over 20
-        interval = 30
+        interval = 12
         num_samples = 20
         short_term_target_obs = []
         long_term_target_obs = []
@@ -100,8 +100,8 @@ class SDDLoader():
                 sampled = tmp[::interval][:num_samples]
                 start_xy = sampled[0, [2, 3]]
                 end_xy   = sampled[8, [2, 3]]
-                if np.linalg.norm(end_xy - start_xy) < 20:
-                    continue
+                # if np.linalg.norm(end_xy - start_xy) < 20:
+                #     continue
                 short_term_target_obs.append(sampled)
 
         self.target_obs = np.asarray(short_term_target_obs)
@@ -345,8 +345,8 @@ class ETHLoader():
             tmp = traj_data[id == traj_data[:, 1], :]
             if tmp.shape[0] >= 20:
                 distance = np.linalg.norm(tmp[0, [2,3]] - tmp[19, [2,3]])
-                if distance >= 5:
-                    target_obs.append(tmp[0:20, :])
+                # if distance >= 5:
+                target_obs.append(tmp[0:20, :])
         self.target_obs = np.asarray(target_obs)
             
 

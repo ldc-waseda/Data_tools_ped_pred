@@ -121,7 +121,22 @@ else:
         fig, ax = plt.subplots(figsize=(4, 4))
         ax.imshow(frame_rgb)                      # 先把帧当背景图
         traj_int = traj.astype(int)
-        ax.plot(traj_int[:, 0], traj_int[:, 1], '-o', color='red', markersize=4, linewidth=2)
+        first_pts = traj_int[:8]
+        ax.plot(
+            first_pts[:, 0], first_pts[:, 1],
+            '-o', color='red',
+            markersize=4, linewidth=2
+        )
+
+        # 后 12 帧绿色
+        second_pts = traj_int[8:8+12]
+        ax.plot(
+            second_pts[:, 0], second_pts[:, 1],
+            '-o', color='green',
+            markersize=4, linewidth=2
+        )
+
+        # ax.plot(traj_int[:, 0], traj_int[:, 1], '-o', color='red', markersize=4, linewidth=2)
         ax.set_title(f"Global View of Ped: {agent_id} from Frame: {frames[0]}")
         ax.axis('off')
         st.pyplot(fig)
@@ -130,37 +145,44 @@ else:
 
     # 4.4 读取所有帧，叠加轨迹，生成 GIF
     st.subheader("GIF 可视化")  # 新增标题
-    images = []
+    # 把 GIF 渲染放到一个 placeholder 里
+    gif_container = st.empty()
+
+    def make_gif_bytes(images):
+        buf = io.BytesIO()
+        with imageio.get_writer(buf, format='GIF', mode='I', fps=5) as writer:
+            for img in images:
+                writer.append_data(img)
+        buf.seek(0)
+        return buf.read()
+
+    # 准备帧数据（一次即可）
     cap = cv2.VideoCapture(vid_file)
     traj_int = traj.astype(int)
-
+    images_rgb = []
     for idx, t in enumerate(frames):
         cap.set(cv2.CAP_PROP_POS_FRAMES, int(t))
         ret, frame = cap.read()
         if not ret:
             continue
-
-        # BGR -> RGB
-        
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        # 只画当前点
         p = tuple(traj_int[idx])
         cv2.circle(frame_rgb, p, radius=15, color=(0, 0, 255), thickness=-1)
-        
-        images.append(frame_rgb)
-
+        images_rgb.append(frame_rgb)
     cap.release()
 
-    buf = io.BytesIO()
-    with imageio.get_writer(buf, format='GIF', mode='I', fps=5) as writer:
-        for img in images:
-            writer.append_data(img)
-    buf.seek(0)
-    gif_bytes = buf.read()
-    # 3. 直接给 Streamlit 展示
-    st.image(gif_bytes, caption="当前点动画 (GIF)", use_container_width=True)
+    # 初次生成并展示 GIF
+    gif_bytes = make_gif_bytes(images_rgb)
+    gif_container.image(gif_bytes, caption="当前点动画 (GIF)", use_container_width=True)
+
+    # Replay 按钮——点击后 Streamlit 会重新运行到这里，重新生成并渲染 GIF
+    if st.button("Replay"):
+        gif_bytes = make_gif_bytes(images_rgb)
+        gif_container.image(gif_bytes, caption="当前点动画 (GIF)", use_container_width=True)
 
     # 4.5 标注输入
+    st.markdown("**Prompt 模板示例：**")
+    st.code("a person go {direction} then {direction}", language="text")
     annotation = st.text_area("请输入本样本的标注内容：", key=f"ann_{scene}_{sample_idx}")
     # 4.6 保存按钮
     if st.button("保存本样本数据", key=f"save_npz_{scene}_{sample_idx}"):
@@ -176,8 +198,8 @@ else:
             "start_frame": np.int32(frames[0]),
             "total_seq":   np.int32(len(frames)),
             "traj":        traj.astype(np.float32),
-            "start_img":   images[0].astype(np.uint8),
-            "annotation":  np.array(annotation)
+            "start_img":   images_rgb[0].astype(np.uint8),
+            "annotation":  np.array(annotation, dtype="U")
         }
         # print(data_dict)
         # 3) 文件名 & 保存
