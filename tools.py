@@ -66,7 +66,7 @@ else:
 
 
 # 3) 在主区域展示所选文件
-st.write(f"### 当前场景：**{scene}**" + (f" / Segment **{segment}**" if scene in SDD_FILE else ""))
+# st.write(f"### 当前场景：**{scene}**" + (f" / Segment **{segment}**" if scene in SDD_FILE else ""))
 
 
 # 4) 加载数据并可视化样本
@@ -81,7 +81,7 @@ else:
 obs = torch.tensor(data_loader.target_obs, dtype=torch.float32)
 obs.tag = data_loader.xy_tag
 num_samples = obs.shape[0]
-
+st.write(f"### 当前场景：**{scene}**" + (f" / Segment **{segment}**" if scene in SDD_FILE else "")+ (f" Total NUM **{num_samples}**"))
 if num_samples == 0:
     st.warning("该场景无可用样本")
 else:
@@ -182,7 +182,12 @@ else:
 
     # 4.5 标注输入
     st.markdown("**Prompt 模板示例：**")
-    st.code("a person go {direction} then {direction}", language="text")
+    st.code("a person go {forward} then {forward}", language="text")
+    st.markdown("**template**")
+    # st.code("hesitating", language="text")
+    # st.code("forward", language="text")
+    # st.code("left", language="text")
+    # st.code("right", language="text")
     annotation = st.text_area("请输入本样本的标注内容：", key=f"ann_{scene}_{sample_idx}")
     # 4.6 保存按钮
     if st.button("保存本样本数据", key=f"save_npz_{scene}_{sample_idx}"):
