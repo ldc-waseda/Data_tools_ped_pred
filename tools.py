@@ -152,7 +152,7 @@ if annotation_key not in st.session_state:
     st.session_state[annotation_key] = ""
 
 # 左侧：观测部分（显示自动速度，手动程度与方向）
-st.sidebar.markdown("## 观测序列标签（句子前半段）")
+st.sidebar.markdown("## 观测序列标签（red）")
 st.sidebar.write(f"**自动速度：** {obs_speed_str} (像素/帧)")
 
 obs_degree    = st.sidebar.selectbox("1️⃣ 程度", [""] + keywords2, key=f"{annotation_key}_obs_degree")
@@ -160,12 +160,16 @@ obs_direction = st.sidebar.selectbox("2️⃣ 方向", [""] + keywords3, key=f"{
 
 # 左侧：预测部分
 st.sidebar.markdown("---")
-st.sidebar.markdown("## 预测序列标签（句子后半段）")
+st.sidebar.markdown("## 预测序列标签（green）")
 st.sidebar.write(f"**自动速度：** {pred_speed_str} (像素/帧)")
 
 pred_degree    = st.sidebar.selectbox("1️⃣ 程度", [""] + keywords2, key=f"{annotation_key}_pred_degree")
 pred_direction = st.sidebar.selectbox("2️⃣ 方向", [""] + keywords3, key=f"{annotation_key}_pred_direction")
-
+pred_confidence = st.sidebar.selectbox(
+    "3️⃣ 置信度 (yes/no)",
+    ["", "yes", "no"],
+    key=f"{annotation_key}_pred_confidence"
+)
 st.sidebar.markdown("---")
 
 # 只要四项都非空，就自动拼接
@@ -287,6 +291,8 @@ if st.button("保存本样本数据", key=f"save_npz_{scene}_{sample_idx}"):
         sec_id = os.path.basename(os.path.dirname(txt_file))
     else:
         sec_id = scene
+    pred_confidence = st.session_state.get(f"{annotation_key}_pred_confidence", "")
+    print(pred_confidence)
     # 2) 准备要保存的字典
     data_dict = {
         "id":          np.int32(agent_id),
@@ -296,7 +302,8 @@ if st.button("保存本样本数据", key=f"save_npz_{scene}_{sample_idx}"):
         "start_img":   images_rgb[0].astype(np.uint8),
         "annotation":  np.array(st.session_state[annotation_key], dtype="U"),
         "avg_speed_obs":  np.float32(avg_speed_obs),
-        "avg_speed_pred": np.float32(avg_speed_pred)
+        "avg_speed_pred": np.float32(avg_speed_pred),
+        "pred_confidence": np.array(pred_confidence, dtype="U")
     }
     # 3) 文件名 & 保存
     dataset_name = "SDD" if scene in SDD_FILE else "ETH"
