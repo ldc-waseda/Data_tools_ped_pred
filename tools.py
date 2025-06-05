@@ -285,7 +285,7 @@ st.text_area(
 )
 
 # 4.7) 保存按钮
-if st.button("保存本样本数据", key=f"save_npz_{scene}_{sample_idx}"):
+if st.sidebar.button("保存样本数据", key=f"save_npz_{scene}_{sample_idx}"):
     # 1) 计算 sec_id
     if scene in SDD_FILE:
         sec_id = os.path.basename(os.path.dirname(txt_file))
@@ -312,4 +312,4 @@ if st.button("保存本样本数据", key=f"save_npz_{scene}_{sample_idx}"):
     save_path = os.path.join("annotations_npz", filename)
     np.savez_compressed(save_path, **data_dict)
 
-    st.success(f"已保存 → {save_path}")
+    st.sidebar.success(f"已保存 → {save_path}")
