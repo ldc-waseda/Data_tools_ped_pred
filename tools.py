@@ -180,7 +180,7 @@ pred_degree    = st.sidebar.selectbox("1️⃣ 程度", [""] + keywords2, key=f"
 pred_direction = st.sidebar.selectbox("2️⃣ 方向", [""] + keywords3, key=f"{annotation_key}_pred_direction", index=default_index3)
 pred_confidence = st.sidebar.selectbox(
     "3️⃣ 置信度 (yes/no)",
-    ["", "yes", "no"],
+    ["yes", "no"],
     key=f"{annotation_key}_pred_confidence"
 )
 st.sidebar.markdown("---")
