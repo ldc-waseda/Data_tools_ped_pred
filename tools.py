@@ -106,6 +106,13 @@ sample_idx = st.sidebar.number_input(
     format="%d"
 )
 
+# 4.1.1) 👉 立刻放一个“保存样本数据”按钮，记录点击结果
+save_btn_clicked = st.sidebar.button(
+    "保存样本数据",
+    key=f"save_npz_{scene}_{sample_idx}"
+)
+
+
 # 4.2) 提取该样本的数据：frames, id, xy
 sample = obs[sample_idx]            # shape [frames, feat_dim]
 frames = sample[:, 0].long().numpy()
@@ -297,8 +304,9 @@ st.text_area(
     height=80
 )
 
-# 4.7) 保存按钮
-if st.sidebar.button("保存样本数据", key=f"save_npz_{scene}_{sample_idx}"):
+
+# 4.7) 保存按钮 —— 改为检测 save_btn_clicked
+if save_btn_clicked:
     # 1) 计算 sec_id
     if scene in SDD_FILE:
         sec_id = os.path.basename(os.path.dirname(txt_file))
@@ -324,5 +332,36 @@ if st.sidebar.button("保存样本数据", key=f"save_npz_{scene}_{sample_idx}")
     os.makedirs("annotations_npz", exist_ok=True)
     save_path = os.path.join("annotations_npz", filename)
     np.savez_compressed(save_path, **data_dict)
-
     st.sidebar.success(f"已保存 → {save_path}")
+
+
+
+# # 4.7) 保存按钮
+# if st.sidebar.button("保存样本数据", key=f"save_npz_{scene}_{sample_idx}"):
+#     # 1) 计算 sec_id
+#     if scene in SDD_FILE:
+#         sec_id = os.path.basename(os.path.dirname(txt_file))
+#     else:
+#         sec_id = scene
+#     pred_confidence = st.session_state.get(f"{annotation_key}_pred_confidence", "")
+#     print(pred_confidence)
+#     # 2) 准备要保存的字典
+#     data_dict = {
+#         "id":          np.int32(agent_id),
+#         "start_frame": np.int32(frames[0]),
+#         "total_seq":   np.int32(len(frames)),
+#         "traj":        traj.astype(np.float32),
+#         "start_img":   images_rgb[0].astype(np.uint8),
+#         "annotation":  np.array(st.session_state[annotation_key], dtype="U"),
+#         "avg_speed_obs":  np.float32(avg_speed_obs),
+#         "avg_speed_pred": np.float32(avg_speed_pred),
+#         "pred_confidence": np.array(pred_confidence, dtype="U")
+#     }
+#     # 3) 文件名 & 保存
+#     dataset_name = "SDD" if scene in SDD_FILE else "ETH"
+#     filename = f"{dataset_name}_{scene}_{sec_id}_{agent_id}.npz"
+#     os.makedirs("annotations_npz", exist_ok=True)
+#     save_path = os.path.join("annotations_npz", filename)
+#     np.savez_compressed(save_path, **data_dict)
+
+#     st.sidebar.success(f"已保存 → {save_path}")
