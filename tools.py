@@ -146,6 +146,9 @@ keywords3 = [
     "left-back", "right-back"
 ]
 
+default_index2 = ([""] + keywords2).index("slight") if "slight" in keywords2 else 0
+default_index3 = ([""] + keywords3).index("forward") if "forward" in keywords3 else 0
+
 # 单一 annotation key
 annotation_key = f"ann_{scene}_{sample_idx}"
 if annotation_key not in st.session_state:
@@ -155,16 +158,16 @@ if annotation_key not in st.session_state:
 st.sidebar.markdown("## 观测序列标签（red）")
 st.sidebar.write(f"**自动速度：** {obs_speed_str} (像素/帧)")
 
-obs_degree    = st.sidebar.selectbox("1️⃣ 程度", [""] + keywords2, key=f"{annotation_key}_obs_degree")
-obs_direction = st.sidebar.selectbox("2️⃣ 方向", [""] + keywords3, key=f"{annotation_key}_obs_direction")
+obs_degree    = st.sidebar.selectbox("1️⃣ 程度", [""] + keywords2, key=f"{annotation_key}_obs_degree", index=default_index2)
+obs_direction = st.sidebar.selectbox("2️⃣ 方向", [""] + keywords3, key=f"{annotation_key}_obs_direction", index=default_index3)
 
 # 左侧：预测部分
 st.sidebar.markdown("---")
 st.sidebar.markdown("## 预测序列标签（green）")
 st.sidebar.write(f"**自动速度：** {pred_speed_str} (像素/帧)")
 
-pred_degree    = st.sidebar.selectbox("1️⃣ 程度", [""] + keywords2, key=f"{annotation_key}_pred_degree")
-pred_direction = st.sidebar.selectbox("2️⃣ 方向", [""] + keywords3, key=f"{annotation_key}_pred_direction")
+pred_degree    = st.sidebar.selectbox("1️⃣ 程度", [""] + keywords2, key=f"{annotation_key}_pred_degree", index=default_index2)
+pred_direction = st.sidebar.selectbox("2️⃣ 方向", [""] + keywords3, key=f"{annotation_key}_pred_direction", index=default_index3)
 pred_confidence = st.sidebar.selectbox(
     "3️⃣ 置信度 (yes/no)",
     ["", "yes", "no"],
