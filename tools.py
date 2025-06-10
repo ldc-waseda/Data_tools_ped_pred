@@ -1,7 +1,6 @@
 from util import *
 from data_loader import ETHLoader, SDDLoader
 import pandas as pd
-import streamlit as st
 import io
 import imageio
 import cv2
@@ -9,6 +8,17 @@ import torch
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+
+import sys, types, torch
+class _SafePath(list):
+    @property
+    def _path(self):
+        return self
+fake_mod = types.ModuleType("torch.classes")
+fake_mod.__path__ = _SafePath()
+sys.modules["torch.classes"] = fake_mod
+
+import streamlit as st
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 project_dir = os.path.dirname(script_dir)
