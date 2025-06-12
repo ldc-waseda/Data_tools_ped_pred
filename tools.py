@@ -87,6 +87,56 @@ else:
 obs = torch.tensor(data_loader.target_obs, dtype=torch.float32)
 obs.tag = data_loader.xy_tag
 num_samples = obs.shape[0]
+
+
+# ---------------------------------------------
+# 插入位置建议：在 obs 加载完成后，紧接 num_samples 之后
+# ---------------------------------------------
+st.sidebar.markdown("### 工具")
+
+# 设置 SessionState key
+session_key = f"unannotated_{scene}"
+clear_key = f"clear_unannotated_{scene}"
+
+# 检测按钮
+if st.sidebar.button("🔍 检测未标注样本"):
+    agent_ids = obs[:, 0, 1].int().numpy()
+    dataset_name = "SDD" if scene in SDD_FILE else "ETH"
+    sec_id = os.path.basename(os.path.dirname(txt_file)) if scene in SDD_FILE else scene
+
+    expected_filenames = [
+        f"{dataset_name}_{scene}_{sec_id}_{agent_id}.npz"
+        for agent_id in agent_ids
+    ]
+
+    annotation_dir = "annotations_npz"
+    existing_files = set(os.listdir(annotation_dir)) if os.path.exists(annotation_dir) else set()
+
+    unannotated_indices = [
+        idx for idx, fname in enumerate(expected_filenames)
+        if fname not in existing_files
+    ]
+
+    st.session_state[session_key] = unannotated_indices
+
+# 可选：清除按钮
+if st.sidebar.button("🧹 清除检测结果"):
+    if session_key in st.session_state:
+        del st.session_state[session_key]
+
+# 显示检测结果（如果存在）
+if session_key in st.session_state:
+    st.markdown("### ❗️未标注样本检测结果")
+    unannotated_indices = st.session_state[session_key]
+    if unannotated_indices:
+        st.warning(f"当前场景下共有 {len(unannotated_indices)} 个样本未被标注")
+        st.code(unannotated_indices, language='python')
+    else:
+        st.success("所有样本均已标注 ✅")
+
+
+
+
 st.write(
     f"### 当前场景：**{scene}**"
     + (f" / Segment **{segment}**" if scene in SDD_FILE else "")
